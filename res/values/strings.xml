@@ -4,5 +4,7 @@
     <string name="app_name">Stopwatch</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <color name="color_background">#0a0a0a</color>
+    <color name="color_text">#fafafa</color>
 
 </resources>
