@@ -2,11 +2,12 @@ package org.alsoftlab.stopwatch;
 
 import java.util.ArrayList;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -45,11 +46,16 @@ public class TimerActivity extends Activity {
         ViewTreeObserver viewTreeObserver = background.getViewTreeObserver();
         if (viewTreeObserver.isAlive()) {
             viewTreeObserver.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
-                @SuppressLint("NewApi")
+                @SuppressWarnings("deprecation")
+                @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
                 @Override
                 public void onGlobalLayout() {
                     if (background.getViewTreeObserver().isAlive()) {
-                        background.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            background.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        } else {
+                            background.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
                     }
                     drawImages();
                 }
