@@ -10,70 +10,67 @@
     tools:context=".TimerActivity" >
 
     <LinearLayout
-        android:id="@+id/linearLayout1"
+        android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:baselineAligned="true"
-        android:gravity="center|center_horizontal|bottom|fill_horizontal" >
+        android:layout_centerHorizontal="true"
+        android:gravity="center_vertical|center_horizontal"
+        android:paddingBottom="32dp" >
 
-        <Chronometer
-            android:id="@+id/chronometer1"
+        <LinearLayout
+            android:id="@+id/linearLayout1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="18dp"
-            android:layout_marginTop="14dp"
-            android:ellipsize="middle"
-            android:gravity="top|bottom"
-            android:padding="10dp"
-            android:textAlignment="gravity"
-            android:textAppearance="@android:style/TextAppearance.Holo.Large"
-            android:textColor="@color/color_text"
-            android:textSize="64sp" />
+            android:baselineAligned="true"
+            android:clickable="true"
+            android:gravity="bottom|center_horizontal"
+            android:onClick="button_OnClick" >
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
 
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="top|bottom|right|center_vertical"
-            android:text="000"
-            android:textAlignment="gravity"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/color_text"
-            android:textSize="48sp" />
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|fill_horizontal|bottom"
+                android:text="00:00"
+                android:textColor="@color/color_text"
+                android:textSize="64sp" />
 
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="top|bottom|right|center_vertical"
+                android:paddingLeft="10dp"
+                android:text="000"
+                android:textAlignment="gravity"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/color_text"
+                android:textSize="48sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <ImageView
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/linearLayout2"
         android:clickable="true"
-        android:onClick="button_OnClick"
-        android:src="@drawable/ic_launcher" />
-
-    <ImageButton
-        android:id="@+id/imageButton1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
         android:onClick="button_OnClick"
         android:src="@drawable/ic_launcher" />
 
