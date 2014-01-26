@@ -113,8 +113,17 @@ public class TimerActivity extends Activity {
      */
     private void setCurrentElapsedTime(long elapsedTime) {
         long diff = elapsedTime - mStartTime;
-        long s = (diff / 1000) % 60;
         long m = (diff / 1000) / 60;
+        long s = (diff / 1000) % 60;
+        int i = 0;
+        for (ImageView img : mImages) {
+            if (i * 1000 / TICK_COUNT <= diff % 1000 && diff % 1000 < (i + 1) * 1000 / TICK_COUNT) {
+                img.setVisibility(View.INVISIBLE);
+            } else {
+                img.setVisibility(View.VISIBLE);
+            }
+            i++;
+        }
         mChronometer.setText(String.format("%02d:%02d", m, s));
         mText.setText(String.format("%03d", diff % 1000));
     }
@@ -158,7 +167,7 @@ public class TimerActivity extends Activity {
             return;
         }
         // DEBUG
-        ImageView image = (ImageView) findViewById(R.id.imageView1);
+        ImageView image = (ImageView) findViewById(R.id.imageView2);
 
         Log.d("IMG X:  ", String.valueOf(image.getLeft()));
         Log.d("IMG Y:  ", String.valueOf(image.getTop()));
@@ -182,9 +191,12 @@ public class TimerActivity extends Activity {
         // outer radius is the nearest distance from center to the border
         int radius = Math.min((background.getWidth() - background.getPaddingRight() - background.getPaddingLeft()) / 2,
                         (background.getHeight() - background.getPaddingBottom() - background.getPaddingTop()) / 2);
+
         // center the circle around center of the background, on the bottom
         int x = background.getWidth() / 2 - background.getPaddingLeft();
         int y = background.getHeight() - background.getPaddingTop() - background.getPaddingBottom() - radius;
+        // geometric center
+        // y = background.getHeight() / 2 - background.getPaddingTop();
 
         // 0 degrees is on the top
         float angleDeg = 0;
@@ -193,8 +205,8 @@ public class TimerActivity extends Activity {
         Log.d("calc Y:  ", String.valueOf(y));
 
         for (int i = 0; i < TICK_COUNT; i++) {
-            ImageView img = new ImageView(image.getContext());
-            img.setImageResource(R.drawable.ic_test);
+            ImageView img = new ImageView(this);
+            img.setImageResource(R.drawable.ic_tick);
             background.addView(img);
 
             moveView(img, x, y, radius, angleDeg);
