@@ -18,6 +18,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class TimerActivity extends Activity {
+    /** The number of ticks shown */
+    private final static int TICK_COUNT = 12;
+
+    /**
+     * All views are refreshed with the current time every this many
+     * milliseconds
+     */
+    private final static int REFRESH_PERIOD_MS = 1000 / TICK_COUNT;
+
     private boolean mStarted = false;
     private long mStartTime = 0;
     private TextView mChronometer;
@@ -29,6 +38,9 @@ public class TimerActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d(getClass().getSimpleName(), "onCreate");
+
         setContentView(R.layout.timer_activity);
         mChronometer = (TextView) findViewById(R.id.textView2);
         mText = (TextView) findViewById(R.id.textView1);
@@ -36,9 +48,9 @@ public class TimerActivity extends Activity {
         mUpdateView = new Runnable() {
             @Override
             public void run() {
-                setCurrentElapsedTime();
+                setCurrentElapsedTime(SystemClock.elapsedRealtime());
 
-                mViewHandler.postDelayed(mUpdateView, 100);
+                mViewHandler.postDelayed(mUpdateView, REFRESH_PERIOD_MS);
             }
         };
 
@@ -50,6 +62,8 @@ public class TimerActivity extends Activity {
                 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
                 @Override
                 public void onGlobalLayout() {
+                    Log.d("TimerActivity", "onGlobalLayout");
+
                     if (background.getViewTreeObserver().isAlive()) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                             background.getViewTreeObserver().removeOnGlobalLayoutListener(this);
@@ -65,6 +79,8 @@ public class TimerActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.d("TimerActivity", "onCreateOptionsMenu");
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.timer, menu);
         return true;
@@ -76,28 +92,27 @@ public class TimerActivity extends Activity {
         if (mStarted) {
             // stop
 
+            long endTime = SystemClock.elapsedRealtime();
             mStarted = false;
 
-            setCurrentElapsedTime();
-
             mViewHandler.removeCallbacks(mUpdateView);
-
+            setCurrentElapsedTime(endTime);
         } else {
             // start
 
             mStartTime = SystemClock.elapsedRealtime();
             mStarted = true;
-            mChronometer.setText("00:00");
-            mText.setText("000");
 
+            setCurrentElapsedTime(mStartTime);
             mViewHandler.post(mUpdateView);
-
-            Log.d("CLICK", "CLICK");
         }
     }
 
-    private void setCurrentElapsedTime() {
-        long diff = SystemClock.elapsedRealtime() - mStartTime;
+    /**
+     * Update text views with the current elapsed time
+     */
+    private void setCurrentElapsedTime(long elapsedTime) {
+        long diff = elapsedTime - mStartTime;
         long s = (diff / 1000) % 60;
         long m = (diff / 1000) / 60;
         mChronometer.setText(String.format("%02d:%02d", m, s));
@@ -109,30 +124,35 @@ public class TimerActivity extends Activity {
      * 
      * @param view
      * @param x
-     *            x coordinate of the circle origin
+     *            X-coordinate of the circle origin
      * @param y
-     *            y coordinate of the circle origin
+     *            Y-coordinate of the circle origin
      * @param radius
-     *            radius = distance from the circle origin to the center of the
+     *            distance from the circle origin to the outer border of the
      *            image
      * @param angleDeg
-     *            angle in degree, clockwise from top
+     *            angle in degrees, counted clockwise from the top (12 o'clock)
      */
-    private void moveView(ImageView view, int x, int y, int radius,
-            float angleDeg) {
-        float tgt_x = Math.round(radius
-                * Math.cos((angleDeg - 90) / 180.0 * Math.PI))
-                + x;
-        float tgt_y = Math.round(radius
-                * Math.sin((angleDeg - 90) / 180.0 * Math.PI))
-                + y;
-        float img_w = view.getDrawable().getIntrinsicWidth(); // FIXME rotated!
-        float img_h = view.getDrawable().getIntrinsicHeight();
-        view.setTranslationX(tgt_x - img_w / 2);
-        view.setTranslationY(tgt_y - img_h / 2);
-        view.setRotation(angleDeg + 0);
+    private void moveView(ImageView view, int x, int y, int radius, float angleDeg) {
+        float center_radius = radius
+                        - Math.max(view.getDrawable().getIntrinsicWidth(), view.getDrawable().getIntrinsicHeight())
+                        / 2.0f;
+        // calculate future image center
+        float tgt_x = Math.round(center_radius * Math.cos((angleDeg - 90) / 180.0f * Math.PI)) + x;
+        float tgt_y = Math.round(center_radius * Math.sin((angleDeg - 90) / 180.0f * Math.PI)) + y;
+        // calculate offset to top left corner
+        tgt_x -= view.getDrawable().getIntrinsicWidth() / 2.0f;
+        tgt_y -= view.getDrawable().getIntrinsicHeight() / 2.0f;
+        // move
+        view.setTranslationX(tgt_x);
+        view.setTranslationY(tgt_y);
+        // rotates around the center
+        view.setRotation(angleDeg);
     }
 
+    /**
+     * Draw 12 ticks
+     */
     private void drawImages() {
         if (mImages.size() > 0) {
             return;
@@ -144,13 +164,13 @@ public class TimerActivity extends Activity {
         Log.d("IMG Y:  ", String.valueOf(image.getTop()));
         Log.d("IMG Width:  ", String.valueOf(image.getWidth()));
         Log.d("IMG Height: ", String.valueOf(image.getHeight()));
-        Log.d("Intr. Width:  ",
-                String.valueOf(image.getDrawable().getIntrinsicWidth()));
-        Log.d("Intr. Height: ",
-                String.valueOf(image.getDrawable().getIntrinsicHeight()));
+        Log.d("Intr. Width:  ", String.valueOf(image.getDrawable().getIntrinsicWidth()));
+        Log.d("Intr. Height: ", String.valueOf(image.getDrawable().getIntrinsicHeight()));
         Log.d("IMG parent: ", image.getParent().getClass().getName());
+        Log.d("IMG context: ", image.getContext().toString());
 
         RelativeLayout background = (RelativeLayout) findViewById(R.id.background);
+        Log.d("BG parent: ", background.getContext().toString());
 
         Log.d("BG X:  ", String.valueOf(background.getLeft()));
         Log.d("BG Y:  ", String.valueOf(background.getTop()));
@@ -159,21 +179,20 @@ public class TimerActivity extends Activity {
         Log.d("BG pad L: ", String.valueOf(background.getPaddingLeft()));
         Log.d("BG pad T: ", String.valueOf(background.getPaddingTop()));
 
-        // radius to center of the image
-        int radius = (background.getWidth() - background.getPaddingRight() - background
-                .getPaddingLeft()) / 2 - image.getWidth() / 2;
-        // center of the background
+        // outer radius is the nearest distance from center to the border
+        int radius = Math.min((background.getWidth() - background.getPaddingRight() - background.getPaddingLeft()) / 2,
+                        (background.getHeight() - background.getPaddingBottom() - background.getPaddingTop()) / 2);
+        // center the circle around center of the background, on the bottom
         int x = background.getWidth() / 2 - background.getPaddingLeft();
-        int y = background.getHeight() / 2 - background.getPaddingTop();
+        int y = background.getHeight() - background.getPaddingTop() - background.getPaddingBottom() - radius;
 
-        // 0 is on the top
+        // 0 degrees is on the top
         float angleDeg = 0;
         Log.d("radius:  ", String.valueOf(radius));
         Log.d("calc X:  ", String.valueOf(x));
         Log.d("calc Y:  ", String.valueOf(y));
 
-        final int countImg = 12;
-        for (int i = 0; i < countImg; i++) {
+        for (int i = 0; i < TICK_COUNT; i++) {
             ImageView img = new ImageView(image.getContext());
             img.setImageResource(R.drawable.ic_test);
             background.addView(img);
@@ -181,7 +200,7 @@ public class TimerActivity extends Activity {
             moveView(img, x, y, radius, angleDeg);
             mImages.add(img);
 
-            angleDeg += 360 / countImg;
+            angleDeg += 360.0f / TICK_COUNT;
         }
     }
 }
