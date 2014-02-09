@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -27,8 +26,8 @@ public class TimerActivity extends Activity {
      */
     private final static int REFRESH_PERIOD_MS = 1000 / TICK_COUNT;
 
-    private boolean mStarted = false;
-    private long mStartTime = 0;
+    private TimerLogic mTimerLogic = new TimerLogic();
+
     private TextView mChronometer;
     private TextView mText;
     private Handler mViewHandler = new Handler();
@@ -48,7 +47,7 @@ public class TimerActivity extends Activity {
         mUpdateView = new Runnable() {
             @Override
             public void run() {
-                setCurrentElapsedTime(SystemClock.elapsedRealtime());
+                setCurrentElapsedTime();
 
                 mViewHandler.postDelayed(mUpdateView, REFRESH_PERIOD_MS);
             }
@@ -88,36 +87,28 @@ public class TimerActivity extends Activity {
 
     public void button_OnClick(View view) {
         // assert (view.getId() == R.id.imageButton1);
-
-        if (mStarted) {
-            // stop
-
-            long endTime = SystemClock.elapsedRealtime();
-            mStarted = false;
-
-            mViewHandler.removeCallbacks(mUpdateView);
-            setCurrentElapsedTime(endTime);
-        } else {
-            // start
-
-            mStartTime = SystemClock.elapsedRealtime();
-            mStarted = true;
-
-            setCurrentElapsedTime(mStartTime);
+        
+        if (mTimerLogic.toggleRunning()) {
+            // started
+            setCurrentElapsedTime();
             mViewHandler.post(mUpdateView);
+        } else {
+            // stopped
+            setCurrentElapsedTime();
+            mViewHandler.removeCallbacks(mUpdateView);
         }
     }
 
     /**
      * Update text views with the current elapsed time
      */
-    private void setCurrentElapsedTime(long elapsedTime) {
-        long diff = elapsedTime - mStartTime;
-        long m = (diff / 1000) / 60;
-        long s = (diff / 1000) % 60;
+    private void setCurrentElapsedTime() {
+        long elapsed = mTimerLogic.getElapsedTime();
+        long m = (elapsed / 1000) / 60;
+        long s = (elapsed / 1000) % 60;
         int i = 0;
         for (ImageView img : mImages) {
-            if (i * 1000 / TICK_COUNT <= diff % 1000 && diff % 1000 < (i + 1) * 1000 / TICK_COUNT) {
+            if (i * 1000 / TICK_COUNT <= elapsed % 1000 && elapsed % 1000 < (i + 1) * 1000 / TICK_COUNT) {
                 img.setVisibility(View.INVISIBLE);
             } else {
                 img.setVisibility(View.VISIBLE);
@@ -125,7 +116,7 @@ public class TimerActivity extends Activity {
             i++;
         }
         mChronometer.setText(String.format("%02d:%02d", m, s));
-        mText.setText(String.format("%03d", diff % 1000));
+        mText.setText(String.format("%03d", elapsed % 1000));
     }
 
     /**
