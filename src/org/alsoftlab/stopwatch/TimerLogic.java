@@ -14,14 +14,14 @@ public class TimerLogic {
         mStarted = false;
         mStartTime = 0;
     }
-    
+
     /**
      * @return true iff the timer is running
      */
     public boolean isRunning() {
         return mStarted;
     }
-    
+
     /**
      * Start the timer if stopped and vice vers
      * 

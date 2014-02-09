@@ -2,6 +2,8 @@ package org.alsoftlab.stopwatch;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
@@ -26,20 +28,28 @@ public class TimerActivity extends Activity {
      */
     private final static int REFRESH_PERIOD_MS = 1000 / TICK_COUNT;
 
-    private TimerLogic mTimerLogic = new TimerLogic();
+    @Inject
+    TimerLogic mTimerLogic;
 
     private TextView mChronometer;
     private TextView mText;
     private Handler mViewHandler = new Handler();
     private Runnable mUpdateView;
     private ArrayList<ImageView> mImages = new ArrayList<ImageView>();
+    
+    public TimerActivity() 
+    {
+        super();
+        
+        Injector.inject(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        
         Log.d(getClass().getSimpleName(), "onCreate");
-
+        
         setContentView(R.layout.timer_activity);
         mChronometer = (TextView) findViewById(R.id.textView2);
         mText = (TextView) findViewById(R.id.textView1);
